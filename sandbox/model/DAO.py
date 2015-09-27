@@ -11,23 +11,12 @@ class DAO(object):
         self.__uuid=uuid.uuid4()
 
     def __eq__(self, other, verbose=False):
-        if other is None:
-            return False
-        if isinstance(other, self.__class__):
+        if not other is None and isinstance(other, self.__class__):
             if not verbose or self.__dict__==other.__dict__:
                 return self.__dict__==other.__dict__
             else:
-                for k in self.__dict__:
-                    # TODO: test for existence of k in self/other -> merge lists???
-                    if self.k!=other.k:
-                        msg="diff: %s in self: %s in other: %s" % (k,self.k,other.k)
-                        if logger!=None:
-                            logger.warn(msg)
-                        else:
-                            print(msg)
-                return False
-        else:
-            return False
+                print("%s" % set(self.__dict__)^other.__dict__)
+        return False
 
 
     def __ne__(self,other):
