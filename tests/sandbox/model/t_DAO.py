@@ -1,28 +1,30 @@
 import unittest
-from sandbox.model.DAO import DAO
+from sandbox.model.DAO import DAO, DAOList
 
 class t_DAO(unittest.TestCase):
 
     def test_init(self):
-        a=DAO()
+        a=DAO(None)
         print(a.uuid())
         self.assertFalse(a.uuid()==None)
 
     def test_equals(self):
-        a=DAO()
+        a=DAO(None)
         b=a
         self.assertTrue(a==a)
         self.assertTrue(a==b)
-        c=DAO()
+        c=DAO(None)
         self.assertFalse(a==c)
-    
-    def test_sets(self):
-        a=DAO()
-        b=DAO()
-        set_a=set([a])
-        set_b=set([b])
-        self.assertTrue(len(set_a^set_a)==0)
-        self.assertTrue(len(set_a^set_b)>0)
+        
+    def test_s(self):
+        l = DAOList(None, DAO(None))
+        a=DAO(None)
+        b=DAO(None)
+        l.add(a)
+        m = DAOList(None, DAO(None))
+        m.add(b)
+        self.assertTrue(len(l^l)==0)
+        self.assertTrue(len(l^m)>0)
         
 
 

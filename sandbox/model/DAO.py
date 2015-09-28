@@ -2,8 +2,9 @@ import uuid
 
 class DAO(object):
     
-    def __init__(self):
+    def __init__(self, sql_dict):
         self.__uuid=uuid.uuid4()
+        self.__sql_dict=sql_dict
         
     def __str__(self):
         return "%s" % self.__uuid
@@ -30,5 +31,31 @@ class DAO(object):
         
     def uuid(self):
         return self.__uuid
+        
+    def load(self):
+        pass
+        
+    def save(self):
+        pass
+        
+    def set_object_data(self):
+        raise NotImplementedError("set_object_data still not implemented!")
+        
+    def delete(self):
+        pass
+        
 
+class DAOList(set):
 
+    def __init__(self, sql_dict, DAO):
+        super(DAOList, self).__init__()
+        self.__sql_dict=sql_dict
+        self.__dao_type=DAO.__class__
+
+    def add(self, DAO):
+        if not isinstance(DAO, self.__dao_type):
+            raise NotImplementedError("cannot add, type doesn't match %s %s" % (self.__dao_type, DAO.__class__))
+        super(DAOList, self).add(DAO)
+
+    def load_all(self, limit=None, orderby=None):
+        pass
