@@ -15,6 +15,14 @@ class t_DAO(unittest.TestCase):
         self.assertTrue(a==b)
         c=DAO()
         self.assertFalse(a==c)
+    
+    def test_sets(self):
+        a=DAO()
+        b=DAO()
+        set_a=set([a])
+        set_b=set([b])
+        self.assertTrue(len(set_a^set_a)==0)
+        self.assertTrue(len(set_a^set_b)>0)
         
 
 
