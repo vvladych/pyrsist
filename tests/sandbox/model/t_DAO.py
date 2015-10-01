@@ -16,15 +16,7 @@ class t_DAO(unittest.TestCase):
         c=DAO(None)
         self.assertFalse(a==c)
         
-    def test_s(self):
-        l = DAOList(None, DAO(None))
-        a=DAO(None)
-        b=DAO(None)
-        l.add(a)
-        m = DAOList(None, DAO(None))
-        m.add(b)
-        self.assertTrue(len(l^l)==0)
-        self.assertTrue(len(l^m)>0)
+
         
 
 

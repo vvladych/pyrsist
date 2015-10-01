@@ -4,15 +4,18 @@ from sandbox.model.DAO import DAO,DAOList
 class t_DAOList(unittest.TestCase):
 
     def test_add(self):
-        a=DAOList()
-        self.assertRaises(BaseException, a.add, None)
-        b=DAO()
-        a.add(b)
-        for d in a:
-            print(d)
-        self.assertEquals(a.size(), 1)
-        # DAO already in list
-        #self.assertRaises(BaseException, a.add, b)
+        l = DAOList(None, DAO(None))
+        a=DAO(None)
+        b=DAO(None)
+        l.add(a)
+        m = DAOList(None, DAO(None))
+        m.add(b)
+        self.assertTrue(len(l^l)==0)
+        self.assertTrue(len(l^m)>0)
+        
+    def test_add_none(self):
+        l = DAOList(None, DAO(None))
+        self.assertRaises(BaseException, l.add, None)
 
 
 suite=unittest.TestLoader().loadTestsFromTestCase(t_DAOList)
