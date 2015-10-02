@@ -16,9 +16,18 @@ class t_DAO(unittest.TestCase):
         c=DAO(None)
         self.assertFalse(a==c)
         
+class t_ConcreteDAO(unittest.TestCase):
 
+    class ConcreteDAO(DAO):
+        def __init__(self):
+            super(t_ConcreteDAO.ConcreteDAO, self).__init__(self)            
         
+    def test_concrete_dao(self):
+        a=t_ConcreteDAO.ConcreteDAO()
+        b=DAO(None)
+        self.assertFalse(a==b)
 
-
-suite=unittest.TestLoader().loadTestsFromTestCase(t_DAO)
+suite=unittest.TestSuite()
+suite.addTest(unittest.makeSuite(t_DAO))
+suite.addTest(unittest.makeSuite(t_ConcreteDAO))
 unittest.TextTestRunner(verbosity=2).run(suite)
