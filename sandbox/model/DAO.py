@@ -4,12 +4,13 @@ class DAO(object):
     
     entity=None
     
-    def __init__(self, sql_dict):
+    def __init__(self):
         self.__uuid=uuid.uuid4()
-        self.__sql_dict=sql_dict
+        self.data_fields=["uuid"]
+        self.sql_dict={}
         
     def __str__(self):
-        return "%s" % self.__uuid
+        return "%s" % self.__dict__
     
     def __hash__(self):
         return hash(str(self))
@@ -47,24 +48,47 @@ class DAO(object):
         pass
         
 
+
+def typecheck(func):
+    def func_wrapper(*args,**kwargs):
+        if not isinstance(args[1], args[0].dao_class):
+            raise BaseException("cannot add, type doesn't match %s %s" % (args[0], args[0].dao_class.__name__))
+        return func(*args)
+    return func_wrapper
+    
+def consistcheck(s=None):
+    def wrap(f):
+        def func_wrapper(*args):            
+            if not hasattr(args[0].dao,"entity") or args[0].dao.entity==None:
+                raise NotImplementedError("entity for dao %s is None" % args[0].dao_class)
+            if not s in args[0].sql_dict or args[0].sql_dict[s]==None:
+                raise NotImplementedError("%s in sql_dict not available" % s)
+            return f(*args)
+        return func_wrapper
+    return wrap
+    
+
 class DAOList(set):
 
-    sql_dict=None
-
+    __LOAD_LIST_SQL_KEY_NAME="load"
+        
     def __init__(self, DAO):
         super(DAOList, self).__init__()
-        self.__dao=DAO
+        self.dao=DAO
+        self.dao_class=DAO.__class__        
+        self.sql_dict={DAOList.__LOAD_LIST_SQL_KEY_NAME:"SELECT %s FROM %s;"}
 
+    @typecheck
     def add(self, DAO):
-        if not isinstance(DAO, self.__dao.__class__):
-            raise NotImplementedError("cannot add, type doesn't match %s %s" % (self.__dao.__class__, DAO.__class__))
         super(DAOList, self).add(DAO)
+        
+    @typecheck
+    def remove(self, DAO):
+        super(DAOList, self).remove(DAO)
+                
 
-    def load_all(self, limit=None, orderby=None):
-        if self.sql_dict==None:
-            raise NotImplementedError("sql_dict still not implemented")
-        if not "load_all" in self.sql_dict:
-            raise NotImplementedError("load_all in self.sql_dict not available")
-        if self.__dao.entity==None:
-            raise NotImplementedError("DAO.entity still not specified")
-        pass
+    @consistcheck("load")
+    def load(self, limit=None, orderby=None):
+        print(self.sql_dict[self.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.dao.entity))
+        return 2
+
