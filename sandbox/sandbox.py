@@ -5,6 +5,12 @@ import logging
 from helpers.config_helper import discover_config, read_config
 from helpers.CONST import CONST
 from helpers import config
+from helpers.db_connection import get_db_connection
+
+
+def test_db_conn():
+    conn=get_db_connection()
+    
 
 if __name__=="__main__":
     logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
@@ -26,4 +32,6 @@ if __name__=="__main__":
     except BaseException as exc:
         print(exc)
     dl.add(a)
-    print(adao_list.load())
+    adao_list.load()
+    for a in adao_list:
+        print(a)

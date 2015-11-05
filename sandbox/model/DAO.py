@@ -1,13 +1,23 @@
 import uuid
+import psycopg2.extras
+from sandbox.helpers.db_connection import get_db_connection
 
 class DAO(object):
     
     entity=None
+    @staticmethod
+    def fabric_method(row=None):
+        print("unimplemented")
+    
+    data_fields=["uuid"]
     
     def __init__(self):
         self.__uuid=uuid.uuid4()
-        self.data_fields=["uuid"]
+        #self.data_fields=["uuid"]
         self.sql_dict={}
+        for p in self.data_fields:
+            setattr(self, p, None)
+
         
     def __str__(self):
         return "%s" % self.__dict__
@@ -67,7 +77,17 @@ def consistcheck(s=None):
         return func_wrapper
     return wrap
     
-
+def dbcursor(s=None):
+    def wrap(f):
+        def func_wrapper(*args):            
+            if not hasattr(args[0].dao,"entity") or args[0].dao.entity==None:
+                raise NotImplementedError("entity for dao %s is None" % args[0].dao_class)
+            if not s in args[0].sql_dict or args[0].sql_dict[s]==None:
+                raise NotImplementedError("%s in sql_dict not available" % s)
+            return f(*args)
+        return func_wrapper
+    return wrap            
+    
 class DAOList(set):
 
     __LOAD_LIST_SQL_KEY_NAME="load"
@@ -90,5 +110,9 @@ class DAOList(set):
     @consistcheck("load")
     def load(self, limit=None, orderby=None):
         print(self.sql_dict[self.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.dao.entity))
-        return 2
-
+        cursor = get_db_connection().cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+        cursor.execute(self.sql_dict[self.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.dao.entity))
+        rows=cursor.fetchall()
+        for row in rows:
+            self.add(self.dao_class.fabric_method(row))
+        cursor.close()
