@@ -1,4 +1,4 @@
-from model.DAO import DAO, DAOList
+from sandbox.model.DAO import DAO, DAOList
 
 class ADAO(DAO):
 

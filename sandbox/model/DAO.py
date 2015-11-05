@@ -7,7 +7,7 @@ class DAO(object):
     entity=None
     @staticmethod
     def fabric_method(row=None):
-        print("unimplemented")
+        raise NotImplementedError("Not implemented")
     
     data_fields=["uuid"]
     
