@@ -1,6 +1,6 @@
 import uuid
 import psycopg2.extras
-from sandbox.helpers.db_connection import get_db_connection
+from sandbox.helpers.db_connection import get_db_connection, dbcursor_wrapper
 
 
 def typecheck(func):
@@ -21,18 +21,6 @@ def consistcheck(s=None):
         return func_wrapper
     return wrap
     
-    
-class dbcursor_wrapper:
-    def __init__(self, query):
-        self.query=query
-
-    def __enter__(self):
-        self.cursor = get_db_connection().cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-        self.cursor.execute(self.query)
-        return self.cursor
-        
-    def __exit__(self, type, value, traceback):
-        self.cursor.close()
 
         
 
@@ -47,7 +35,6 @@ class DAO(object):
     
     def __init__(self):
         self.__uuid=uuid.uuid4()
-        self.sql_dict={}
         for p in self.data_fields:
             setattr(self, p, None)
 
@@ -98,7 +85,7 @@ class DAOList(set):
 
     __LOAD_LIST_SQL_KEY_NAME="load"
         
-    sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s FROM %s;"}    
+    sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s FROM %s"}    
         
     def __init__(self, DAO):
         super(DAOList, self).__init__()

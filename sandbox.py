@@ -5,7 +5,7 @@ import logging
 from sandbox.helpers.config_helper import discover_config, read_config
 from sandbox.helpers.CONST import CONST
 from sandbox.helpers import config
-from sandbox.helpers.db_connection import get_db_connection
+from sandbox.helpers.db_connection import get_db_connection, get_uuid_from_database
 
 
 def test_db_conn():
@@ -36,3 +36,4 @@ if __name__=="__main__":
     adao_list.load()
     for a in adao_list:
         print(a)
+    print("uuid: %s", get_uuid_from_database())
