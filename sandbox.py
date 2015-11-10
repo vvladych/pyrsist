@@ -1,5 +1,5 @@
 from sandbox.model.DAO import DAO, DAOList
-from sandbox.model.ADAO import ADAO, ADAOList
+from sandbox.model.ADAO import ADAO
 import os
 import logging
 from sandbox.helpers.config_helper import discover_config, read_config
@@ -25,6 +25,7 @@ if __name__=="__main__":
         print(exc)
     dl.add(d)
     a=ADAO()
+    a.load()
     adao_list=DAOList(a)
     adao_list.add(a)
     try:

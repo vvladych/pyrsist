@@ -16,3 +16,5 @@ def get_db_connection():
     return dbInstance
 
     
+def get_uuid_from_database():
+	connection=get_db_connection().cursor()

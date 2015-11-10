@@ -10,19 +10,5 @@ class ADAO(DAO):
         return adao
 
     data_fields=["uuid","a"]
-        
-    def __init__(self):
-        super(ADAO, self).__init__()
-        self.entity="ADAO"
-        
-    def __str__(self):
-        return "uuid:%s a:%s" % (self.uuid, self.a)
+    entity="ADAO"
    
-
-
-        
-        
-class ADAOList(DAOList):
-    
-    def __init__(self):
-        super(ADAOList, self).__init__(ADAO())

@@ -79,7 +79,9 @@ class DAO(object):
         return self.__uuid
         
     def load(self):
-        pass
+        sql_query_load="""SELECT %s FROM %s WHERE uuid=%s""" % (",".join(self.__class__.data_fields), self.__class__.entity, self.uuid)
+        print(sql_query_load)
+        
         
     def save(self):
         pass
@@ -121,3 +123,17 @@ class DAOList(set):
             for row in rows:
                 self.add(self.dao_class.fabric_method(row))
         
+
+class DAOtoDAO(object):
+
+    def __init__(self, primDAO):
+        self.primDAO=primDAO
+        
+    def load(self):
+        pass
+        
+    def setSecDAO(self, secDAO):
+        self.secDAO=secDAO
+        
+    def save(self):
+        self.secDAO.save()
