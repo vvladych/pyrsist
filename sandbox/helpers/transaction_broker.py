@@ -1,4 +1,5 @@
 from collections import deque
+from sandbox.helpers.db_connection import get_db_connection
 
 def transactional(func):
     def func_wrapper(*args,**kwargs):
@@ -30,6 +31,7 @@ class TransactionBroker(object):
         def stop(self):            
             self.queue.pop()
             if len(self.queue)==0:
+                get_db_connection().commit()
                 print("hier commiten!!!!")
 
             
@@ -46,35 +48,3 @@ class TransactionBroker(object):
 
     def stop(self):
         self.instance.stop()
-        
-        
-
-class A(object):
-
-    def __init__(self):
-        self.a=1
-        
-    @transactional
-    def save(self):
-        print("in A.save")
-
-        
-class B(object):
-    def __init__(self):
-        self.b=1
-        self.a=A()
-        
-    @transactional
-    def save(self):
-        print("in B.save")
-        self.a.save()
-
-class C(object):
-    def __init__(self):
-        self.b=B()
-        
-    @transactional
-    def save(self):
-        print("in C.save")
-        self.b.save()
-        
