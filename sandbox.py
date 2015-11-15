@@ -36,4 +36,12 @@ if __name__=="__main__":
     adao_list.load()
     for a in adao_list:
         print(a)
-    print("uuid: %s", get_uuid_from_database())
+    print("uuid: %s" % get_uuid_from_database())
+    try:
+        a1=ADAO()
+        a1.a="test"
+        print("vor dem save")
+        a1.save()
+        print("saved")
+    except BaseException as ex:
+        print(ex)
