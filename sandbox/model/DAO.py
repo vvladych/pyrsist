@@ -14,7 +14,7 @@ def typecheck(func):
 def consistcheck(s=None):
     def wrap(f):
         def func_wrapper(*args):            
-            if not hasattr(args[0].dao,"entity") or args[0].dao.entity==None:
+            if not hasattr(args[0],"entity") or args[0].entity==None:
                 raise NotImplementedError("entity for dao %s is None" % args[0].dao_class)
             # TODO: else: test for entity in db with simple select
             if not s in args[0].sql_dict or args[0].sql_dict[s]==None:
@@ -27,6 +27,13 @@ def consistcheck(s=None):
         
 
 class DAO(object):
+
+    __LOAD_OBJECT_BY_UUID="load"
+    __DELETE_OBJECT_BY_UUID="delete"
+        
+    sql_dict={__LOAD_OBJECT_BY_UUID:"SELECT %s FROM %s WHERE uuid='%s'",
+              __DELETE_OBJECT_BY_UUID:"DELETE FROM %s WHERE uuid='%s'"}    
+
     
     entity=None
     data_fields=["uuid"]
@@ -37,9 +44,7 @@ class DAO(object):
         for p in dao_class.data_fields:
             setattr(dao, p, getattr(row,p))
         return dao
-        
-        #raise NotImplementedError("Not implemented")
-    
+            
     def __init__(self, uuid=None):        
         for p in self.data_fields:
             setattr(self, p, None)
@@ -72,9 +77,10 @@ class DAO(object):
 
     def __ne__(self,other):
         return not self==other
-                
+             
+    @consistcheck("load")
     def load(self):
-        sql_query_load="""SELECT %s FROM %s WHERE uuid='%s'""" % (",".join(self.__class__.data_fields), self.__class__.entity, self.uuid)
+        sql_query_load=self.sql_dict[DAO.__LOAD_OBJECT_BY_UUID] % (",".join(self.__class__.data_fields), self.__class__.entity, self.uuid)
         with dbcursor_wrapper(sql_query_load) as cursor:
             row=cursor.fetchone()
             if row!=None:
@@ -90,8 +96,12 @@ class DAO(object):
     def set_object_data(self):
         raise NotImplementedError("set_object_data still not implemented!")
         
+    @consistcheck("delete")
+    @transactional
     def delete(self):
-        pass
+        sql_query=self.sql_dict[DAO.__DELETE_OBJECT_BY_UUID] % (self.__class__.entity, self.uuid)
+        with dbcursor_wrapper(sql_query) as cursor:
+            pass
         
     
     
@@ -104,7 +114,8 @@ class DAOList(set):
     def __init__(self, DAO):
         super(DAOList, self).__init__()
         self.dao=DAO
-        self.dao_class=DAO.__class__        
+        self.dao_class=DAO.__class__
+        self.entity=DAO.entity
         
 
     @typecheck
@@ -119,7 +130,7 @@ class DAOList(set):
     @consistcheck("load")
     @transactional
     def load(self):
-        query=self.sql_dict[DAOList.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.dao.entity)
+        query=self.sql_dict[DAOList.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.entity)
         with dbcursor_wrapper(query) as cursor:            
             rows=cursor.fetchall()
             for row in rows:
