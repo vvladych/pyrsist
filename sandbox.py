@@ -35,7 +35,7 @@ if __name__=="__main__":
     dl.add(a)
     adao_list.load()
     for a in adao_list:
-        print(a)
+        print("DAS IST A, sicher!!!: %s" % a)
     print("uuid: %s" % get_uuid_from_database())
     try:
         a1=ADAO()
@@ -45,3 +45,5 @@ if __name__=="__main__":
         print("saved")
     except BaseException as ex:
         print(ex)
+    a2=ADAO("41cc8197-9643-4a0f-8b9d-0881356411ff")
+    print(a2)
