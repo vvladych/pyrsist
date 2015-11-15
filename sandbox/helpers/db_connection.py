@@ -10,15 +10,17 @@ dbInstance=None
 
 
 class dbcursor_wrapper:
-    def __init__(self, query):
+    def __init__(self, query, data=None):
         self.query=query
+        self.data=data
 
     def __enter__(self):
         self.cursor = get_db_connection().cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-        self.cursor.execute(self.query)
+        self.cursor.execute(self.query, self.data)
         return self.cursor
         
     def __exit__(self, type, value, traceback):
+        get_db_connection().commit()
         self.cursor.close()
 
 def get_db_connection():
