@@ -1,6 +1,7 @@
 import uuid
 import psycopg2.extras
 from sandbox.helpers.db_connection import get_db_connection, dbcursor_wrapper, get_uuid_from_database
+from sandbox.helpers.transaction_broker import transactional
 
 
 def typecheck(func):
@@ -29,16 +30,24 @@ class DAO(object):
     
     entity=None
     data_fields=["uuid"]
-    
-    
+        
     @staticmethod
-    def fabric_method(row=None):
-        raise NotImplementedError("Not implemented")
+    def fabric_method(dao_class, row):
+        dao=dao_class()
+        for p in dao_class.data_fields:
+            setattr(dao, p, getattr(row,p))
+        return dao
+        
+        #raise NotImplementedError("Not implemented")
     
-    def __init__(self):        
+    def __init__(self, uuid=None):        
         for p in self.data_fields:
             setattr(self, p, None)
-        self.uuid=get_uuid_from_database()
+        if uuid==None:
+            self.uuid=get_uuid_from_database()
+        else:
+            self.uuid=uuid
+            self.load()
 
         
     def __str__(self):
@@ -66,13 +75,13 @@ class DAO(object):
                 
     def load(self):
         sql_query_load="""SELECT %s FROM %s WHERE uuid='%s'""" % (",".join(self.__class__.data_fields), self.__class__.entity, self.uuid)
-        print(sql_query_load)
         with dbcursor_wrapper(sql_query_load) as cursor:
             row=cursor.fetchone()
             if row!=None:
-                print(row)
-                for key in row.keys:
-                    print(key)
+                for data_field in self.__class__.data_fields:
+                    setattr(self, data_field, getattr(row, data_field))
+            else:
+                print("row is None")
             
         
     def save(self):
@@ -108,12 +117,13 @@ class DAOList(set):
                 
 
     @consistcheck("load")
+    @transactional
     def load(self):
         query=self.sql_dict[DAOList.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.dao.entity)
         with dbcursor_wrapper(query) as cursor:            
             rows=cursor.fetchall()
             for row in rows:
-                self.add(self.dao_class.fabric_method(row))
+                self.add(self.dao_class.fabric_method(self.dao_class, row))
         
 
 class DAOtoDAO(object):
@@ -127,5 +137,6 @@ class DAOtoDAO(object):
     def setSecDAO(self, secDAO):
         self.secDAO=secDAO
         
+    @transactional
     def save(self):
         self.secDAO.save()

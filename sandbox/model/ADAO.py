@@ -4,14 +4,7 @@ from sandbox.helpers.db_connection import dbcursor_wrapper
 import psycopg2
 import uuid
 
-class ADAO(DAO):    
-
-    @staticmethod
-    def fabric_method(row=None):
-        adao=ADAO()
-        adao.uuid=row.uuid
-        adao.a=row.a
-        return adao
+class ADAO(DAO):
 
     data_fields=["uuid","a"]
     entity="ADAO"
