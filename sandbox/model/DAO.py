@@ -1,6 +1,6 @@
 import uuid
 import psycopg2.extras
-from sandbox.helpers.db_connection import get_db_connection, dbcursor_wrapper
+from sandbox.helpers.db_connection import get_db_connection, dbcursor_wrapper, get_uuid_from_database
 
 
 def typecheck(func):
@@ -15,6 +15,7 @@ def consistcheck(s=None):
         def func_wrapper(*args):            
             if not hasattr(args[0].dao,"entity") or args[0].dao.entity==None:
                 raise NotImplementedError("entity for dao %s is None" % args[0].dao_class)
+            # TODO: else: test for entity in db with simple select
             if not s in args[0].sql_dict or args[0].sql_dict[s]==None:
                 raise NotImplementedError("%s in sql_dict not available" % s)
             return f(*args)
@@ -27,16 +28,17 @@ def consistcheck(s=None):
 class DAO(object):
     
     entity=None
+    data_fields=["uuid"]
+    
+    
     @staticmethod
     def fabric_method(row=None):
         raise NotImplementedError("Not implemented")
     
-    data_fields=["uuid"]
-    
-    def __init__(self):
-        self.__uuid=uuid.uuid4()
+    def __init__(self):        
         for p in self.data_fields:
             setattr(self, p, None)
+        self.uuid=get_uuid_from_database()
 
         
     def __str__(self):
@@ -61,17 +63,20 @@ class DAO(object):
 
     def __ne__(self,other):
         return not self==other
-        
-    def uuid(self):
-        return self.__uuid
-        
+                
     def load(self):
-        sql_query_load="""SELECT %s FROM %s WHERE uuid=%s""" % (",".join(self.__class__.data_fields), self.__class__.entity, self.uuid)
+        sql_query_load="""SELECT %s FROM %s WHERE uuid='%s'""" % (",".join(self.__class__.data_fields), self.__class__.entity, self.uuid)
         print(sql_query_load)
-        
+        with dbcursor_wrapper(sql_query_load) as cursor:
+            row=cursor.fetchone()
+            if row!=None:
+                print(row)
+                for key in row.keys:
+                    print(key)
+            
         
     def save(self):
-        pass
+        raise NotImplementedError("save still not implemented")
         
     def set_object_data(self):
         raise NotImplementedError("set_object_data still not implemented!")
