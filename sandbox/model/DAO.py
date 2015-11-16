@@ -6,8 +6,8 @@ from sandbox.helpers.transaction_broker import transactional
 
 def typecheck(func):
     def func_wrapper(*args,**kwargs):
-        if not isinstance(args[1], args[0].dao_class):
-            raise BaseException("cannot add, type doesn't match %s %s" % (args[0], args[0].dao_class.__name__))
+        if not isinstance(args[1], args[0].dao):
+            raise BaseException("cannot add, type doesn't match %s %s" % (args[0], args[0].dao.__name__))
         return func(*args)
     return func_wrapper
     
@@ -114,7 +114,6 @@ class DAOList(set):
     def __init__(self, DAO):
         super(DAOList, self).__init__()
         self.dao=DAO
-        self.dao_class=DAO.__class__
         self.entity=DAO.entity
         
 
@@ -128,13 +127,12 @@ class DAOList(set):
                 
 
     @consistcheck("load")
-    @transactional
     def load(self):
-        query=self.sql_dict[DAOList.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.entity)
+        query=DAOList.sql_dict[DAOList.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.entity)
         with dbcursor_wrapper(query) as cursor:            
             rows=cursor.fetchall()
             for row in rows:
-                self.add(self.dao_class.fabric_method(self.dao_class, row))
+                self.add(self.dao.fabric_method(self.dao, row))
         
 
 class DAOtoDAO(object):
