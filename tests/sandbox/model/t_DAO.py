@@ -15,6 +15,12 @@ class t_DAO(unittest.TestCase):
         c=DAO()
         self.assertFalse(a==c)
         
+    def test_to_str(self):
+        a=DAO()
+        self.assertRegex("%s" % a, "'uuid':")
+        self.assertRegex("%s" % a, "^{.*}$")
+        
+        
 class t_ConcreteDAO(unittest.TestCase):
 
     class ConcreteDAO(DAO):

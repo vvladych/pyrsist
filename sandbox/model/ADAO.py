@@ -12,13 +12,9 @@ class ADAO(DAO):
     adao_to_bdao_list=DAOList(ADAOtoBDAO)
     
     def __str__(self):
-        ret="{"
-        for attr in self.data_fields:
-            ret="""%s %s:%s; """ % (ret, attr, getattr(self, attr))
-        for a in self.adao_to_bdao_list:
-            ret="""%s; {%s:%s} """ % (ret, "adao_to_bdao", a.secDAO.uuid)
-        ret="""%s }""" % ret
-        return ret
+        retA=" ".join(list(map(lambda x:"%s:%s" % (x,getattr(self,x)), self.data_fields)))        
+        retL=" ".join(list(map(lambda x:"%s:%s" % ("adao_to_bdao",a.secDAO.uuid), self.adao_to_bdao_list)))        
+        return "{ %s %s }" % (retA, retL)
         
     def addBDAO(self,BDAO):
         adao_to_bdao=ADAOtoBDAO(self)

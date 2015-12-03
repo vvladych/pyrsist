@@ -30,9 +30,12 @@ class DAO(object):
 
     __LOAD_OBJECT_BY_UUID="load"
     __DELETE_OBJECT_BY_UUID="delete"
+    __SAVE_OBJECT="save"
         
     sql_dict={__LOAD_OBJECT_BY_UUID:"SELECT %s FROM %s WHERE uuid='%s'",
-              __DELETE_OBJECT_BY_UUID:"DELETE FROM %s WHERE uuid='%s'"}    
+              __DELETE_OBJECT_BY_UUID:"DELETE FROM %s WHERE uuid='%s'",
+              __SAVE_OBJECT:"INSERT INTO %s(%s) VALUES( %%s, %%s);"
+              }    
 
     
     entity=None
@@ -90,11 +93,18 @@ class DAO(object):
                 print("row is None")
             
         
+    @consistcheck("save")
+    @transactional
     def save(self):
-        raise NotImplementedError("save still not implemented")
+        fieldlist=[]
+        data=[]
+        for key in data_fields:
+            fieldlist.add(key)
+            data.add(data_fields[key])
+        sql_save=self.sql_dict[DAO.__SAVE_OBJECT] % (self.entity, ",".join(fieldlist))
+        with dbcursor_wrapper(sql_save, data) as cursor:
+            pass
         
-    def set_object_data(self):
-        raise NotImplementedError("set_object_data still not implemented!")
         
     @consistcheck("delete")
     @transactional
@@ -102,6 +112,12 @@ class DAO(object):
         sql_query=self.sql_dict[DAO.__DELETE_OBJECT_BY_UUID] % (self.__class__.entity, self.uuid)
         with dbcursor_wrapper(sql_query) as cursor:
             pass
+            
+    
+    @transactional
+    def update(self):
+        d=None
+        sql_query="""UPDATE %s SET %s WHERE uuid=%s""" % (self.entity, d, self.uuid)
         
     
     
