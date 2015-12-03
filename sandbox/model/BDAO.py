@@ -8,9 +8,3 @@ class BDAO(DAO):
 
     data_fields=["uuid","b"]
     entity="BDAO"
-    
-    def save(self):
-        sql_save="""INSERT INTO bdao (uuid,b) VALUES( %s, %s);"""
-        data=(self.uuid, self.b,)
-        with dbcursor_wrapper(sql_save, data) as cursor:
-            pass
