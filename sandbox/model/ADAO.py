@@ -19,12 +19,6 @@ class ADAO(DAO):
             ret="""%s; {%s:%s} """ % (ret, "adao_to_bdao", a.secDAO.uuid)
         ret="""%s }""" % ret
         return ret
-    
-    def save(self):
-        sql_save="""INSERT INTO adao (uuid,a) VALUES( %s, %s);"""
-        data=(self.uuid, self.a,)        
-        with dbcursor_wrapper(sql_save, data) as cursor:
-            pass
         
     def addBDAO(self,BDAO):
         adao_to_bdao=ADAOtoBDAO(self)
