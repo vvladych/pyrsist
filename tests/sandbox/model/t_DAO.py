@@ -5,7 +5,7 @@ class t_DAO(unittest.TestCase):
 
     def test_init(self):
         a=DAO()        
-        self.assertFalse(a.uuid!=None)
+        self.assertTrue(a.uuid!=None)
 
     def test_equals(self):
         a=DAO()

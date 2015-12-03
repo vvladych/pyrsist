@@ -4,11 +4,11 @@ from sandbox.model.DAO import DAO,DAOList
 class t_DAOList(unittest.TestCase):
 
     def test_add(self):
-        l = DAOList(DAO())
+        l = DAOList(DAO)
         a=DAO()
         b=DAO()
         l.add(a)
-        m = DAOList(DAO())
+        m = DAOList(DAO)
         m.add(b)
         self.assertTrue(len(l^l)==0)
         self.assertTrue(len(l^m)>0)
