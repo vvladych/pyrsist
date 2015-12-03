@@ -68,6 +68,12 @@ if __name__=="__main__":
         break
     
     print(adao)
+    adao=ADAO()
+    adao.a="trululu"
+    print(adao)
+    adao.save()
+    adao.a="bababa"
+    adao.update()
     b=BDAO()
     b.b="hier ist b!"
     adao.addBDAO(b)

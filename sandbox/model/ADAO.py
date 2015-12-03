@@ -13,7 +13,7 @@ class ADAO(DAO):
     
     def __str__(self):
         retA=" ".join(list(map(lambda x:"%s:%s" % (x,getattr(self,x)), self.data_fields)))        
-        retL=" ".join(list(map(lambda x:"%s:%s" % ("adao_to_bdao",a.secDAO.uuid), self.adao_to_bdao_list)))        
+        retL=" ".join(list(map(lambda x:"%s:%s" % ("adao_to_bdao",x.secDAO.uuid), self.adao_to_bdao_list)))        
         return "{ %s %s }" % (retA, retL)
         
     def addBDAO(self,BDAO):

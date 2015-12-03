@@ -31,9 +31,11 @@ class DAO(object):
     __LOAD_OBJECT_BY_UUID="load"
     __DELETE_OBJECT_BY_UUID="delete"
     __SAVE_OBJECT="save"
+    __UPDATE_OBJECT="update"
         
     sql_dict={__LOAD_OBJECT_BY_UUID:"SELECT %s FROM %s WHERE uuid='%s'",
               __DELETE_OBJECT_BY_UUID:"DELETE FROM %s WHERE uuid='%s'",
+              __UPDATE_OBJECT:"UPDATE %s SET %s WHERE uuid='%s'",
               __SAVE_OBJECT:"INSERT INTO %s(%s) VALUES( %%s, %%s);"
               }    
 
@@ -98,9 +100,9 @@ class DAO(object):
     def save(self):
         fieldlist=[]
         data=[]
-        for key in data_fields:
-            fieldlist.add(key)
-            data.add(data_fields[key])
+        for key in self.data_fields:
+            fieldlist.append(key)
+            data.append(getattr(self,key))
         sql_save=self.sql_dict[DAO.__SAVE_OBJECT] % (self.entity, ",".join(fieldlist))
         with dbcursor_wrapper(sql_save, data) as cursor:
             pass
@@ -114,13 +116,21 @@ class DAO(object):
             pass
             
     
+    @consistcheck("update")
     @transactional
     def update(self):
-        d=None
-        sql_query="""UPDATE %s SET %s WHERE uuid=%s""" % (self.entity, d, self.uuid)
-        
-    
-    
+        psycopg2.extras.register_uuid()
+        setstr=",".join(list(map(lambda x:x+"=%("+x+")s", filter(lambda x:x!="uuid", self.data_fields))))
+        sql_update=self.sql_dict[DAO.__UPDATE_OBJECT] % (self.entity, setstr, self.uuid)
+        h=dict()        
+        for f in self.data_fields:
+            if f!='uuid':
+                h[f]=getattr(self,f)
+        print(h)
+        with dbcursor_wrapper(sql_update, h) as cursor:
+            pass        
+
+
 class DAOList(set):
 
     __LOAD_LIST_SQL_KEY_NAME="load"
