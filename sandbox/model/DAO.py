@@ -91,8 +91,6 @@ class DAO(object):
             if row!=None:
                 for data_field in self.__class__.data_fields:
                     setattr(self, data_field, getattr(row, data_field))
-            else:
-                print("row is None")
             
         
     @consistcheck("save")
@@ -126,7 +124,6 @@ class DAO(object):
         for f in self.data_fields:
             if f!='uuid':
                 h[f]=getattr(self,f)
-        print(h)
         with dbcursor_wrapper(sql_update, h) as cursor:
             pass        
 
