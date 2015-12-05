@@ -91,6 +91,8 @@ class DAO(object):
             if row!=None:
                 for data_field in self.__class__.data_fields:
                     setattr(self, data_field, getattr(row, data_field))
+            else:
+                raise BaseException("row with uuid %s doesn't exist" % self.uuid)
             
         
     @consistcheck("save")
