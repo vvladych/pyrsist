@@ -19,8 +19,7 @@ class t_DAO(unittest.TestCase):
         a=DAO()
         self.assertRegex("%s" % a, "'uuid':")
         self.assertRegex("%s" % a, "^{.*}$")
-        
-        
+
 class t_ConcreteDAO(unittest.TestCase):
 
     class ConcreteDAO(DAO):
@@ -31,6 +30,7 @@ class t_ConcreteDAO(unittest.TestCase):
         a=t_ConcreteDAO.ConcreteDAO()
         b=DAO()
         self.assertFalse(a==b)
+
 
 suite=unittest.TestSuite()
 suite.addTest(unittest.makeSuite(t_DAO))
