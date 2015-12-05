@@ -32,9 +32,7 @@ class TransactionBroker(object):
             self.queue.pop()
             if len(self.queue)==0:
                 get_db_connection().commit()
-                print("hier commiten!!!!")
 
-            
     instance=None
     def __init__(self):
         if not TransactionBroker.instance:
