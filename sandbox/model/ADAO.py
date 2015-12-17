@@ -9,6 +9,7 @@ class ADAO(DAO):
 
     data_fields=["uuid","a"]
     entity="ADAO"
+    join_objects_list={"ADAOtoBDAO":DAOList(ADAOtoBDAO)}
     adao_to_bdao_list=DAOList(ADAOtoBDAO)
     
     def __str__(self):
@@ -17,6 +18,4 @@ class ADAO(DAO):
         return "{ %s %s }" % (retA, retL)
         
     def addBDAO(self,BDAO):
-        adao_to_bdao=ADAOtoBDAO(self)
-        adao_to_bdao.setBDAO(BDAO)
-        self.adao_to_bdao_list.add(adao_to_bdao)
+        self.join_objects_list["ADAOtoBDAO"].add(ADAOtoBDAO(self,BDAO))

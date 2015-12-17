@@ -30,27 +30,22 @@ class DAO(object):
 
     __LOAD_OBJECT_BY_UUID="load"
     __DELETE_OBJECT_BY_UUID="delete"
-    __SAVE_OBJECT="save"
+    __INSERT_OBJECT="insert"
     __UPDATE_OBJECT="update"
         
     sql_dict={__LOAD_OBJECT_BY_UUID:"SELECT %s FROM %s WHERE uuid='%s'",
               __DELETE_OBJECT_BY_UUID:"DELETE FROM %s WHERE uuid='%s'",
               __UPDATE_OBJECT:"UPDATE %s SET %s WHERE uuid='%s'",
-              __SAVE_OBJECT:"INSERT INTO %s(%s) VALUES( %%s, %%s);"
+              __INSERT_OBJECT:"INSERT INTO %s(%s) VALUES( %%s, %%s );"
               }    
 
     
     entity=None
     data_fields=["uuid"]
-        
-    @staticmethod
-    def fabric_method(dao_class, row):
-        dao=dao_class()
-        for p in dao_class.data_fields:
-            setattr(dao, p, getattr(row,p))
-        return dao
-            
-    def __init__(self, uuid=None):        
+    join_objects_list={}
+
+    def __init__(self, uuid=None):
+        self.__is_persisted=False
         for p in self.data_fields:
             setattr(self, p, None)
         if uuid==None:
@@ -91,34 +86,35 @@ class DAO(object):
             if row!=None:
                 for data_field in self.__class__.data_fields:
                     setattr(self, data_field, getattr(row, data_field))
+                self.__is_persisted=True
             else:
                 raise BaseException("row with uuid %s doesn't exist" % self.uuid)
-            
-        
-    @consistcheck("save")
+    
     @transactional
     def save(self):
+        if self.__is_persisted:
+            self.__update()
+        else:
+            self.__insert()
+
+    @consistcheck("insert")
+    def __insert(self):
         fieldlist=[]
         data=[]
         for key in self.data_fields:
             fieldlist.append(key)
             data.append(getattr(self,key))
-        sql_save=self.sql_dict[DAO.__SAVE_OBJECT] % (self.entity, ",".join(fieldlist))
+        sql_save=self.sql_dict[DAO.__INSERT_OBJECT] % (self.entity, ",".join(fieldlist))
         with dbcursor_wrapper(sql_save, data) as cursor:
             pass
+        self.__is_persisted=True
+        for join_object_list in self.join_objects_list.keys():
+            for elem in self.join_objects_list.get(join_object_list):
+                elem.save()
         
-        
-    @consistcheck("delete")
-    @transactional
-    def delete(self):
-        sql_query=self.sql_dict[DAO.__DELETE_OBJECT_BY_UUID] % (self.__class__.entity, self.uuid)
-        with dbcursor_wrapper(sql_query) as cursor:
-            pass
-            
-    
+
     @consistcheck("update")
-    @transactional
-    def update(self):
+    def __update(self):
         psycopg2.extras.register_uuid()
         setstr=",".join(list(map(lambda x:x+"=%("+x+")s", filter(lambda x:x!="uuid", self.data_fields))))
         sql_update=self.sql_dict[DAO.__UPDATE_OBJECT] % (self.entity, setstr, self.uuid)
@@ -128,6 +124,16 @@ class DAO(object):
                 h[f]=getattr(self,f)
         with dbcursor_wrapper(sql_update, h) as cursor:
             pass        
+
+    
+    @transactional
+    @consistcheck("delete")
+    def delete(self):
+        sql_query=self.sql_dict[DAO.__DELETE_OBJECT_BY_UUID] % (self.__class__.entity, self.uuid)
+        with dbcursor_wrapper(sql_query) as cursor:
+            pass
+            
+    
 
 
 class DAOList(set):
@@ -157,20 +163,31 @@ class DAOList(set):
         with dbcursor_wrapper(query) as cursor:            
             rows=cursor.fetchall()
             for row in rows:
-                self.add(self.dao.fabric_method(self.dao, row))
+                self.add(self.dao(getattr(row,'uuid')))
         
 
 class DAOtoDAO(object):
 
-    def __init__(self, primDAO):
+    __INSERT_OBJECT="insert"
+        
+    sql_dict={
+                __INSERT_OBJECT:"INSERT INTO %s(%s,%s) VALUES( %%s, %%s );"
+              }    
+
+
+    def __init__(self, primDAO, secDAO):
         self.primDAO=primDAO
+        self.secDAO=secDAO
         
     def load(self):
         pass
         
-    def setSecDAO(self, secDAO):
-        self.secDAO=secDAO
         
     @transactional
     def save(self):
-        self.secDAO.save()
+        
+        sql_save=self.sql_dict[DAOtoDAO.__INSERT_OBJECT] % (self.entity, self.primDAO_PK, self.secDAO_PK)
+        print(sql_save)
+        with dbcursor_wrapper(sql_save, [self.primDAO.uuid, self.secDAO.uuid]) as cursor:
+            pass
+

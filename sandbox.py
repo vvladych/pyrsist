@@ -51,13 +51,8 @@ def testSuite1():
         dao.delete()
         print("done!")
         break    
-    
-if __name__=="__main__":
-    logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
-    logging.warn(config.getint('S','a'))
-    print(config.getint('S','a'))
-    testSuite1()
-    
+
+def testsuite2():
     adao_list=DAOList(ADAO)
     adao_list.load()
     adao=None
@@ -73,8 +68,38 @@ if __name__=="__main__":
     print(adao)
     adao.save()
     adao.a="bababa"
-    adao.update()
+    adao.save()
     b=BDAO()
     b.b="hier ist b!"
     adao.addBDAO(b)
     print(adao)
+    
+def testsuite3():
+    adao_list=DAOList(ADAO)
+    adao_list.load()
+    for a in adao_list:
+        print(a)
+        if a.a=="das ist ein test":
+            a.a="nun 2"
+        else:
+            a.a="das ist ein test"
+        a.save()
+    adao=ADAO()
+    adao.a="nun 3"
+    adao.save()
+    adao.a="und nun 7"
+    adao.save()
+    adao.delete()
+    print(len(adao_list))
+    adao=ADAO(adao_list.pop().uuid)
+    print(adao)
+    print(len(adao_list))
+
+    
+if __name__=="__main__":
+    logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
+    adao=ADAO()
+    bdao=BDAO()
+    bdao.save()
+    adao.addBDAO(bdao)
+    adao.save()
