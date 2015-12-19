@@ -2,29 +2,9 @@ import uuid
 import psycopg2.extras
 from sandbox.helpers.db_connection import get_db_connection, dbcursor_wrapper, get_uuid_from_database
 from sandbox.helpers.transaction_broker import transactional
+from sandbox.helpers.type_guard import typecheck, consistcheck
+from sandbox.model.DAOtoDAO import DAOtoDAO
 
-
-def typecheck(func):
-    def func_wrapper(*args,**kwargs):
-        if not isinstance(args[1], args[0].dao):
-            raise BaseException("cannot add, type doesn't match %s %s" % (args[0], args[0].dao.__name__))
-        return func(*args)
-    return func_wrapper
-    
-def consistcheck(s=None):
-    def wrap(f):
-        def func_wrapper(*args):            
-            if not hasattr(args[0],"entity") or args[0].entity==None:
-                raise NotImplementedError("entity for dao %s is None" % args[0].dao_class)
-            # TODO: else: test for entity in db with simple select
-            if not s in args[0].sql_dict or args[0].sql_dict[s]==None:
-                raise NotImplementedError("%s in sql_dict not available" % s)
-            return f(*args)
-        return func_wrapper
-    return wrap
-    
-
-        
 
 class DAO(object):
 
@@ -38,7 +18,6 @@ class DAO(object):
               __UPDATE_OBJECT:"UPDATE %s SET %s WHERE uuid='%s'",
               __INSERT_OBJECT:"INSERT INTO %s(%s) VALUES( %%s, %%s );"
               }    
-
     
     entity=None
     data_fields=["uuid"]
@@ -56,7 +35,12 @@ class DAO(object):
 
         
     def __str__(self):
-        return "%s" % self.__dict__
+        retA=" ".join(list(map(lambda x:"%s:%s" % (x,getattr(self,x)), self.data_fields)))
+        daotodao_list=[]
+        for join_object_list in self.join_objects_list.keys():
+            list_to_append=self.join_objects_list.get(join_object_list)
+            daotodao_list.append("%s: {%s}" % (join_object_list, list_to_append))            
+        return "{ %s %s }" % (retA, " ".join(daotodao_list))
     
     def __hash__(self):
         return hash(str(self))
@@ -89,6 +73,11 @@ class DAO(object):
                 self.__is_persisted=True
             else:
                 raise BaseException("row with uuid %s doesn't exist" % self.uuid)
+        # load daotodao objects: not necessary!
+        for join_object_list in self.join_objects_list.keys():
+            self.join_objects_list[join_object_list].load()
+
+        
     
     @transactional
     def save(self):
@@ -140,7 +129,13 @@ class DAOList(set):
 
     __LOAD_LIST_SQL_KEY_NAME="load"
         
-    sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s FROM %s"}    
+    sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s FROM %s"}   
+
+    def __str__(self):
+        elems=[]
+        for e in self:
+            elems.append("%s" % e)
+        return ",".join(elems)
         
     def __init__(self, DAO):
         super(DAOList, self).__init__()
@@ -165,29 +160,4 @@ class DAOList(set):
             for row in rows:
                 self.add(self.dao(getattr(row,'uuid')))
         
-
-class DAOtoDAO(object):
-
-    __INSERT_OBJECT="insert"
-        
-    sql_dict={
-                __INSERT_OBJECT:"INSERT INTO %s(%s,%s) VALUES( %%s, %%s );"
-              }    
-
-
-    def __init__(self, primDAO, secDAO):
-        self.primDAO=primDAO
-        self.secDAO=secDAO
-        
-    def load(self):
-        pass
-        
-        
-    @transactional
-    def save(self):
-        
-        sql_save=self.sql_dict[DAOtoDAO.__INSERT_OBJECT] % (self.entity, self.primDAO_PK, self.secDAO_PK)
-        print(sql_save)
-        with dbcursor_wrapper(sql_save, [self.primDAO.uuid, self.secDAO.uuid]) as cursor:
-            pass
 

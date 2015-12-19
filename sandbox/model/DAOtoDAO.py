@@ -1,0 +1,58 @@
+import uuid
+import psycopg2.extras
+from sandbox.helpers.db_connection import get_db_connection, dbcursor_wrapper, get_uuid_from_database
+from sandbox.helpers.transaction_broker import transactional
+from sandbox.helpers.type_guard import typecheck, consistcheck
+
+class DAOtoDAO(object):
+
+    __INSERT_OBJECT="insert"
+        
+    sql_dict={
+                __INSERT_OBJECT:"INSERT INTO %s(%s,%s) VALUES( %%s, %%s );"
+              }    
+
+    def __str__(self):
+        return "primDAO.uuid: %s secDAO.uuid: %s" % (self.primDAO_uuid, self.secDAO_uuid)
+              
+    def __init__(self, primDAO_uuid, secDAO_uuid):
+        self.primDAO_uuid=primDAO_uuid
+        self.secDAO_uuid=secDAO_uuid
+        
+    def load(self):
+        pass
+        
+        
+    @transactional
+    def save(self):        
+        sql_save=self.sql_dict[DAOtoDAO.__INSERT_OBJECT] % (self.entity, self.primDAO_PK, self.secDAO_PK)
+        with dbcursor_wrapper(sql_save, [self.primDAO_uuid, self.secDAO_uuid]) as cursor:
+            pass
+
+
+class DAOtoDAOList(set):
+
+    __LOAD_LIST_SQL_KEY_NAME="load"
+
+    sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s,%s FROM %s WHERE %s=%s"}
+    
+    def __str__(self):
+        elem=[]
+        for e in self:
+            elem.append("%s" % e)
+        return ",".join(elem)    
+
+    def __init__(self, DAOtoDAO):
+        super(DAOtoDAOList, self).__init__() 
+        self.dao_to_dao_class=DAOtoDAO.__class__
+        self.prim_dao_to_dao=DAOtoDAO
+        self.entity=DAOtoDAO.entity
+        
+    @consistcheck("load")
+    def load(self, primDAO_uuid):
+        query=DAOtoDAOList.sql_dict[DAOtoDAOList.__LOAD_LIST_SQL_KEY_NAME] % (self.DAOtoDAO.primDAO_PK, self.DAOtoDAO.secDAO_PK, self.entity, self.DAOtoDAO.primDAO_PK, primDAO_uuid)
+        print(query)
+        with dbcursor_wrapper(query) as cursor:            
+            rows=cursor.fetchall()
+            for row in rows:
+                self.add(self.dao_to_dao_class(getattr(row,"%s" % self.DAOtoDAO.primDAO_PK), getattr(row,"%s" % self.DAOtoDAO.secDAO_PK)))

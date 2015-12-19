@@ -103,3 +103,5 @@ if __name__=="__main__":
     bdao.save()
     adao.addBDAO(bdao)
     adao.save()
+    print(adao)
+    
