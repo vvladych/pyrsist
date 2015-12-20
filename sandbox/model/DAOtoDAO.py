@@ -11,18 +11,15 @@ class DAOtoDAO(object):
     sql_dict={
                 __INSERT_OBJECT:"INSERT INTO %s(%s,%s) VALUES( %%s, %%s );"
               }    
-
+              
     def __str__(self):
         return "primDAO.uuid: %s secDAO.uuid: %s" % (self.primDAO_uuid, self.secDAO_uuid)
               
     def __init__(self, primDAO_uuid, secDAO_uuid):
         self.primDAO_uuid=primDAO_uuid
         self.secDAO_uuid=secDAO_uuid
-        
-    def load(self):
-        pass
-        
-        
+
+
     @transactional
     def save(self):        
         sql_save=self.sql_dict[DAOtoDAO.__INSERT_OBJECT] % (self.entity, self.primDAO_PK, self.secDAO_PK)
@@ -35,7 +32,7 @@ class DAOtoDAOList(set):
     __LOAD_LIST_SQL_KEY_NAME="load"
 
     sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s,%s FROM %s WHERE %s=%s"}
-    
+
     def __str__(self):
         elem=[]
         for e in self:
@@ -47,10 +44,10 @@ class DAOtoDAOList(set):
         self.dao_to_dao_class=DAOtoDAO.__class__
         self.prim_dao_to_dao=DAOtoDAO
         self.entity=DAOtoDAO.entity
-        
+
     @consistcheck("load")
     def load(self, primDAO_uuid):
-        query=DAOtoDAOList.sql_dict[DAOtoDAOList.__LOAD_LIST_SQL_KEY_NAME] % (self.DAOtoDAO.primDAO_PK, self.DAOtoDAO.secDAO_PK, self.entity, self.DAOtoDAO.primDAO_PK, primDAO_uuid)
+        query=DAOtoDAOList.sql_dict[DAOtoDAOList.__LOAD_LIST_SQL_KEY_NAME] % (self.prim_dao_to_dao.primDAO_PK, self.prim_dao_to_dao.secDAO_PK, self.entity, self.prim_dao_to_dao.primDAO_PK, primDAO_uuid)
         print(query)
         with dbcursor_wrapper(query) as cursor:            
             rows=cursor.fetchall()

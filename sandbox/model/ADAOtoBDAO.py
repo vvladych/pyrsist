@@ -6,7 +6,6 @@ import uuid
 
 class ADAOtoBDAO(DAOtoDAO):
 
-    data_fields=["adao_uuid","bdao_uuid"]
     entity="adao_to_bdao"
     primDAO_PK="adao_uuid"
     secDAO_PK="bdao_uuid"

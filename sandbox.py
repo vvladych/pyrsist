@@ -1,8 +1,12 @@
+
 from sandbox.model.DAO import DAO, DAOList
 from sandbox.model.ADAO import ADAO
 from sandbox.model.BDAO import BDAO
+import os
 import logging
+from sandbox.helpers.config_helper import discover_config, read_config
 from sandbox.helpers.CONST import CONST
+from sandbox.helpers import config
 from sandbox.helpers.db_connection import get_db_connection, get_uuid_from_database
 
 
@@ -91,14 +95,17 @@ def testsuite3():
     adao=ADAO(adao_list.pop().uuid)
     print(adao)
     print(len(adao_list))
-
-    
-if __name__=="__main__":
-    logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
     adao=ADAO()
     bdao=BDAO()
     bdao.save()
     adao.addBDAO(bdao)
     adao.save()
     print(adao)
+
+    
+if __name__=="__main__":
+    logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
+    adao_list=DAOList(ADAO)
+    adao_list.load()
+
     
