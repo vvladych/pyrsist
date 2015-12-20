@@ -31,7 +31,7 @@ class DAOtoDAOList(set):
 
     __LOAD_LIST_SQL_KEY_NAME="load"
 
-    sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s,%s FROM %s WHERE %s=%s"}
+    sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s,%s FROM %s WHERE %s='%s'"}
 
     def __str__(self):
         elem=[]
@@ -40,16 +40,14 @@ class DAOtoDAOList(set):
         return ",".join(elem)    
 
     def __init__(self, DAOtoDAO):
-        super(DAOtoDAOList, self).__init__() 
-        self.dao_to_dao_class=DAOtoDAO.__class__
+        super(DAOtoDAOList, self).__init__()
         self.prim_dao_to_dao=DAOtoDAO
         self.entity=DAOtoDAO.entity
 
     @consistcheck("load")
     def load(self, primDAO_uuid):
         query=DAOtoDAOList.sql_dict[DAOtoDAOList.__LOAD_LIST_SQL_KEY_NAME] % (self.prim_dao_to_dao.primDAO_PK, self.prim_dao_to_dao.secDAO_PK, self.entity, self.prim_dao_to_dao.primDAO_PK, primDAO_uuid)
-        print(query)
         with dbcursor_wrapper(query) as cursor:            
             rows=cursor.fetchall()
             for row in rows:
-                self.add(self.dao_to_dao_class(getattr(row,"%s" % self.DAOtoDAO.primDAO_PK), getattr(row,"%s" % self.DAOtoDAO.secDAO_PK)))
+                self.add(self.prim_dao_to_dao(getattr(row,self.prim_dao_to_dao.primDAO_PK), getattr(row,self.prim_dao_to_dao.secDAO_PK)))

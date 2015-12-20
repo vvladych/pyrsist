@@ -75,7 +75,6 @@ class DAO(object):
                 raise BaseException("row with uuid %s doesn't exist" % self.uuid)
         # load daotodao objects: not necessary!
         for join_object_list in self.join_objects_list.keys():
-            print("hier")
             self.join_objects_list[join_object_list].load(self.uuid)
 
         
@@ -151,16 +150,13 @@ class DAOList(set):
     @typecheck
     def remove(self, DAO):
         super(DAOList, self).remove(DAO)
-                
 
     @consistcheck("load")
     def load(self):
         query=DAOList.sql_dict[DAOList.__LOAD_LIST_SQL_KEY_NAME] % (",".join(self.dao.data_fields), self.entity)
-        print(query)
-        with dbcursor_wrapper(query) as cursor:            
+        with dbcursor_wrapper(query) as cursor:
             rows=cursor.fetchall()
             for row in rows:
-                print(row)
                 self.add(self.dao(getattr(row,'uuid')))
         
 

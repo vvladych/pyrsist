@@ -1,12 +1,8 @@
-
 from sandbox.model.DAO import DAO, DAOList
 from sandbox.model.ADAO import ADAO
 from sandbox.model.BDAO import BDAO
-import os
 import logging
-from sandbox.helpers.config_helper import discover_config, read_config
 from sandbox.helpers.CONST import CONST
-from sandbox.helpers import config
 from sandbox.helpers.db_connection import get_db_connection, get_uuid_from_database
 
 
@@ -107,5 +103,6 @@ if __name__=="__main__":
     logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
     adao_list=DAOList(ADAO)
     adao_list.load()
+    print(adao_list)
 
     

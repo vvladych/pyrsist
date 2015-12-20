@@ -1,8 +1,5 @@
-from sandbox.model.DAO import DAO, DAOList, DAOtoDAO, consistcheck
-from sandbox.helpers.db_connection import dbcursor_wrapper
+from sandbox.model.DAO import DAOtoDAO
 
-import psycopg2
-import uuid
 
 class ADAOtoBDAO(DAOtoDAO):
 
