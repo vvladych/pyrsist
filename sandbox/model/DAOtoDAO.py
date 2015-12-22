@@ -4,6 +4,7 @@ from sandbox.helpers.db_connection import get_db_connection, dbcursor_wrapper, g
 from sandbox.helpers.transaction_broker import transactional
 from sandbox.helpers.type_guard import typecheck, consistcheck
 
+
 class DAOtoDAO(object):
 
     __INSERT_OBJECT="insert"

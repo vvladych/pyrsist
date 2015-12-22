@@ -1,4 +1,4 @@
-from sandbox.model.DAO import DAOtoDAO
+from sandbox.model.DAOtoDAO import DAOtoDAO
 
 
 class ADAOtoBDAO(DAOtoDAO):

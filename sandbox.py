@@ -101,8 +101,12 @@ def testsuite3():
     
 if __name__=="__main__":
     logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
-    adao_list=DAOList(ADAO)
-    adao_list.load()
-    print(adao_list)
-
+    adao = ADAO()
+    adao.a="a"
+    adao.save()
+    bdao = BDAO()
+    bdao.save()
+    adao.addBDAO(bdao)
+    adao.save()
+    print(adao)
     
