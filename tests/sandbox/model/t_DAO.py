@@ -4,20 +4,20 @@ from sandbox.model.DAO import DAO, DAOList
 class t_DAO(unittest.TestCase):
 
     def test_init(self):
-        a=DAO()        
-        self.assertTrue(a.uuid!=None)
+        a = DAO()
+        self.assertTrue(a.uuid is not None)
 
     def test_equals(self):
-        a=DAO()
-        b=a
-        self.assertTrue(a==a)
-        self.assertTrue(a==b)
-        c=DAO()
-        self.assertFalse(a==c)
+        a = DAO()
+        b = a
+        self.assertTrue(a == a)
+        self.assertTrue(a == b)
+        c = DAO()
+        self.assertFalse(a == c)
         
     def test_to_str(self):
-        a=DAO()
-        self.assertRegex("%s" % a, "'uuid':")
+        a = DAO()
+        self.assertRegex("%s" % a, "uuid:")
         self.assertRegex("%s" % a, "^{.*}$")
 
 class t_ConcreteDAO(unittest.TestCase):
@@ -27,9 +27,9 @@ class t_ConcreteDAO(unittest.TestCase):
             super(t_ConcreteDAO.ConcreteDAO, self).__init__()            
         
     def test_concrete_dao(self):
-        a=t_ConcreteDAO.ConcreteDAO()
-        b=DAO()
-        self.assertFalse(a==b)
+        a = t_ConcreteDAO.ConcreteDAO()
+        b = DAO()
+        self.assertFalse(a == b)
 
 
 suite=unittest.TestSuite()

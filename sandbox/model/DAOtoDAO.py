@@ -1,8 +1,6 @@
-import uuid
-import psycopg2.extras
-from sandbox.helpers.db_connection import get_db_connection, dbcursor_wrapper, get_uuid_from_database
+from sandbox.helpers.db_connection import dbcursor_wrapper
 from sandbox.helpers.transaction_broker import transactional
-from sandbox.helpers.type_guard import typecheck, consistcheck
+import sandbox.helpers.type_guard
 
 
 class DAOtoDAO(object):
@@ -23,14 +21,14 @@ class DAOtoDAO(object):
         self.secDAO_uuid=secDAO_uuid
 
     @transactional
-    @consistcheck("insert")
+    @sandbox.helpers.type_guard.consistcheck("insert")
     def save(self):
         sql_save=self.sql_dict[DAOtoDAO.__INSERT_OBJECT] % (self.entity, self.primDAO_PK, self.secDAO_PK)
         with dbcursor_wrapper(sql_save, [self.primDAO_uuid, self.secDAO_uuid]) as cursor:
             pass
 
     @transactional
-    @consistcheck("delete")
+    @sandbox.helpers.type_guard.consistcheck("delete")
     def delete(self):
         delete_condition = "%s='%s' AND %s='%s'" % (self.primDAO_PK, self.primDAO_uuid, self.secDAO_PK, self.secDAO_uuid)
         sql_delete = self.sql_dict[DAOtoDAO.__DELETE_OBJECT] % (self.entity, delete_condition)
@@ -55,7 +53,7 @@ class DAOtoDAOList(set):
         self.prim_dao_to_dao=DAOtoDAO
         self.entity=DAOtoDAO.entity
 
-    @consistcheck("load")
+    @sandbox.helpers.type_guard.consistcheck("load")
     def load(self, primDAO_uuid):
         query=DAOtoDAOList.sql_dict[DAOtoDAOList.__LOAD_LIST_SQL_KEY_NAME] % (self.prim_dao_to_dao.primDAO_PK, self.prim_dao_to_dao.secDAO_PK, self.entity, self.prim_dao_to_dao.primDAO_PK, primDAO_uuid)
         with dbcursor_wrapper(query) as cursor:

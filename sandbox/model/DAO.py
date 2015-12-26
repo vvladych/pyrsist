@@ -1,4 +1,3 @@
-import copy
 import psycopg2.extras
 from sandbox.helpers.db_connection import dbcursor_wrapper, get_uuid_from_database
 from sandbox.helpers.transaction_broker import transactional
@@ -8,20 +7,20 @@ from sandbox.model.DAOtoDAO import DAOtoDAOList
 
 class DAO(object):
 
-    __LOAD_OBJECT_BY_UUID="load"
-    __DELETE_OBJECT_BY_UUID="delete"
-    __INSERT_OBJECT="insert"
-    __UPDATE_OBJECT="update"
+    __LOAD_OBJECT_BY_UUID = "load"
+    __DELETE_OBJECT_BY_UUID = "delete"
+    __INSERT_OBJECT = "insert"
+    __UPDATE_OBJECT = "update"
         
-    sql_dict={__LOAD_OBJECT_BY_UUID:"SELECT %s FROM %s WHERE uuid='%s'",
-              __DELETE_OBJECT_BY_UUID:"DELETE FROM %s WHERE uuid='%s'",
-              __UPDATE_OBJECT:"UPDATE %s SET %s WHERE uuid='%s'",
-              __INSERT_OBJECT:"INSERT INTO %s(%s) VALUES( %%s, %%s );"
+    sql_dict={__LOAD_OBJECT_BY_UUID: "SELECT %s FROM %s WHERE uuid='%s'",
+              __DELETE_OBJECT_BY_UUID: "DELETE FROM %s WHERE uuid='%s'",
+              __UPDATE_OBJECT: "UPDATE %s SET %s WHERE uuid='%s'",
+              __INSERT_OBJECT: "INSERT INTO %s(%s) VALUES( %%s, %%s );"
               }    
     
-    entity=None
-    data_fields=["uuid"]
-    join_objects_list={}
+    entity = None
+    data_fields = ["uuid"]
+    join_objects_list = {}
 
     def __init__(self, uuid=None):
         self.__is_persisted=False
@@ -55,7 +54,7 @@ class DAO(object):
         return False
 
     def __ne__(self,other):
-        return not self==other
+        return not self == other
              
     @consistcheck("load")
     def load(self):
@@ -109,10 +108,8 @@ class DAO(object):
             join_object_list_to_compare=DAOtoDAOList(self.join_objects_list[join_object_list].prim_dao_to_dao)
             join_object_list_to_compare.load(self.uuid)
             if join_object_list_to_compare ^ self.join_objects_list[join_object_list] is not None:
-                print("Difference!")
                 join_object_list_to_compare.deleteall()
                 self.join_objects_list[join_object_list].save()
-
 
     @transactional
     @consistcheck("delete")
@@ -125,32 +122,32 @@ class DAO(object):
 
 class DAOList(set):
 
-    __LOAD_LIST_SQL_KEY_NAME="load"
+    __LOAD_LIST_SQL_KEY_NAME = "load"
         
-    sql_dict={__LOAD_LIST_SQL_KEY_NAME:"SELECT %s FROM %s"}   
+    sql_dict={__LOAD_LIST_SQL_KEY_NAME: "SELECT %s FROM %s"}
 
     def __str__(self):
-        elems=[]
+        elems = []
         for e in self:
             elems.append("%s" % e)
         return ",".join(elems)
         
-    def __init__(self, DAO):
+    def __init__(self, dao_list_type):
         """
 
-        :type DAO: object of DAO type
+        :type dao_list_type: object of DAO type
         """
         super(DAOList, self).__init__()
-        self.dao=DAO
-        self.entity=DAO.entity
+        self.dao = dao_list_type
+        self.entity = DAO.entity
 
     @typecheck
-    def add(self, DAO):
-        super(DAOList, self).add(DAO)
+    def add(self, dao_to_add):
+        super(DAOList, self).add(dao_to_add)
         
     @typecheck
-    def remove(self, DAO):
-        super(DAOList, self).remove(DAO)
+    def remove(self, dao_to_delete):
+        super(DAOList, self).remove(dao_to_delete)
 
     @consistcheck("load")
     def load(self):

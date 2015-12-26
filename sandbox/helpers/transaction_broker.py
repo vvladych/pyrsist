@@ -38,7 +38,6 @@ class TransactionBroker(object):
                 sandbox.helpers.db_connection.get_db_connection().commit()
 
         def rollback(self):
-            print("rollback alles!")
             sandbox.helpers.db_connection.get_db_connection().rollback()
             self.queue=collections.deque([])
 
