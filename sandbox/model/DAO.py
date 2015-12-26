@@ -97,7 +97,7 @@ class DAO(object):
     @consistcheck("update")
     def __update(self):
         psycopg2.extras.register_uuid()
-        setstr = ",".join(list(map(lambda x:x+"=%("+x+")s", filter(lambda x: x!="uuid", self.data_fields))))
+        setstr = ",".join(list(map(lambda x: x + "=%("+x+")s", filter(lambda x: x != "uuid", self.data_fields))))
         sql_update=self.sql_dict[DAO.__UPDATE_OBJECT] % (self.entity, setstr, self.uuid)
         h = dict()
         for f in self.data_fields:
@@ -110,8 +110,9 @@ class DAO(object):
             join_object_list_to_compare.load(self.uuid)
             if join_object_list_to_compare ^ self.join_objects_list[join_object_list] is not None:
                 print("Difference!")
-                # remove child objects from the join table and insert new objects
-                print(join_object_list_to_compare ^ self.join_objects_list[join_object_list])
+                join_object_list_to_compare.deleteall()
+                self.join_objects_list[join_object_list].save()
+
 
     @transactional
     @consistcheck("delete")

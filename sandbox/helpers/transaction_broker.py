@@ -1,5 +1,6 @@
-from collections import deque
-from sandbox.helpers.db_connection import get_db_connection
+import collections
+import sandbox.helpers.db_connection
+
 
 def transactional(func):
     def func_wrapper(*args,**kwargs):
@@ -14,13 +15,16 @@ class TransactionBrokerWrapper:
         TransactionBroker().start()
         
     def __exit__(self, type, value, traceback):
-        TransactionBroker().stop()
+        if isinstance(value, BaseException):
+            TransactionBroker().rollback()
+        else:
+            TransactionBroker().stop()
         
 
 class TransactionBroker(object):
     class __TransactionBroker(object):
         def __init__(self):
-            self.queue=deque([])
+            self.queue=collections.deque([])
             
         def __str__(self):
             return "%s" % len(self.queue)
@@ -30,10 +34,16 @@ class TransactionBroker(object):
 
         def stop(self):            
             self.queue.pop()
-            if len(self.queue)==0:
-                get_db_connection().commit()
+            if len(self.queue) == 0:
+                sandbox.helpers.db_connection.get_db_connection().commit()
+
+        def rollback(self):
+            print("rollback alles!")
+            sandbox.helpers.db_connection.get_db_connection().rollback()
+            self.queue=collections.deque([])
 
     instance=None
+
     def __init__(self):
         if not TransactionBroker.instance:
             TransactionBroker.instance=TransactionBroker.__TransactionBroker()
@@ -46,3 +56,6 @@ class TransactionBroker(object):
 
     def stop(self):
         self.instance.stop()
+
+    def rollback(self):
+        self.instance.rollback()
