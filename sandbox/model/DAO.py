@@ -20,10 +20,13 @@ class DAO(object):
 
     entity = None
     data_fields = ["uuid"]
-    join_objects_list = {}
+    join_objects = {}
 
     def __init__(self, uuid = None):
         self.__is_persisted = False
+        for key in self.join_objects.keys():
+            setattr(self, key, DAOtoDAOList(self.join_objects[key]))
+
         if uuid is not None:
             self.uuid = uuid
             self.load()
@@ -35,8 +38,8 @@ class DAO(object):
     def __str__(self):
         ret_a = " ".join(list(map(lambda x: "%s:%s" % (x,getattr(self,x)), self.data_fields)))
         dao_to_dao_list=[]
-        for join_object_list in self.join_objects_list.keys():
-            list_to_append = self.join_objects_list.get(join_object_list)
+        for join_object_list in self.join_objects.keys():
+            list_to_append = getattr(self, join_object_list)
             dao_to_dao_list.append("%s: {%s}" % (join_object_list, list_to_append))
         return "{ %s %s }" % (ret_a, " ".join(dao_to_dao_list))
 
@@ -68,8 +71,9 @@ class DAO(object):
             else:
                 raise BaseException("row with uuid %s doesn't exist" % self.uuid)
         # load daotodao objects
-        for join_object_list in self.join_objects_list.keys():
-            self.join_objects_list[join_object_list].load(self.uuid)
+        for join_object in self.join_objects.keys():
+            join_object_list = getattr(self, join_object)
+            join_object_list.load(self.uuid)
 
     @transactional
     def save(self):
@@ -89,8 +93,9 @@ class DAO(object):
         with dbcursor_wrapper(sql_save, data) as cursor:
             pass
         self.__is_persisted = True
-        for join_object_list in self.join_objects_list.keys():
-            for elem in self.join_objects_list.get(join_object_list):
+        for join_object in self.join_objects.keys():
+            join_object_list = getattr(self, join_object)
+            for elem in join_object_list:
                 elem.save()
 
     @consistcheck("update")
@@ -104,12 +109,13 @@ class DAO(object):
                 h[f] = getattr(self,f)
         with dbcursor_wrapper(sql_update, h) as cursor:
             pass
-        for join_object_list in self.join_objects_list.keys():
-            join_object_list_to_compare=DAOtoDAOList(self.join_objects_list[join_object_list].prim_dao_to_dao)
+        for join_object in self.join_objects.keys():
+            join_object_list_to_compare = DAOtoDAOList(self.join_objects[join_object])
             join_object_list_to_compare.load(self.uuid)
-            if join_object_list_to_compare ^ self.join_objects_list[join_object_list] is not None:
+            current_join_object_list = getattr(self, join_object)
+            if join_object_list_to_compare ^ current_join_object_list is not None:
                 join_object_list_to_compare.deleteall()
-                self.join_objects_list[join_object_list].save()
+                current_join_object_list.save()
 
     @transactional
     @consistcheck("delete")
@@ -159,5 +165,3 @@ class DAOList(set):
                 dao = self.dao(uuid)
                 dao.load()
                 self.add(dao)
-
-

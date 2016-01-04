@@ -1,6 +1,8 @@
 from sandbox.model.DAO import DAO, DAOList
 from sandbox.model.ADAO import ADAO
 from sandbox.model.BDAO import BDAO
+from sandbox.model.DAOtoDAO import DAOtoDAOList
+from sandbox.model.ADAOtoBDAO import ADAOtoBDAO
 import logging
 from sandbox.helpers.CONST import CONST
 from sandbox.helpers.db_connection import get_db_connection, get_uuid_from_database, dbcursor_wrapper
@@ -74,14 +76,14 @@ def testsuite2():
     print(adao)
     
 def testsuite3():
-    adao_list=DAOList(ADAO)
+    adao_list = DAOList(ADAO)
     adao_list.load()
     for a in adao_list:
         print(a)
-        if a.a=="das ist ein test":
-            a.a="nun 2"
+        if a.a == "das ist ein test":
+            a.a = "nun 2"
         else:
-            a.a="das ist ein test"
+            a.a = "das ist ein test"
         a.save()
     adao=ADAO()
     adao.a="nun 3"
@@ -102,13 +104,18 @@ def testsuite3():
 
 def testsuite4():
     adao = ADAO()
-    adao.a="a"
+    adao.a = "a"
     adao.save()
     bdao = BDAO()
     bdao.save()
+    adao2 = ADAO()
     adao.addBDAO(bdao)
     adao.save()
     print(adao)
+    print(adao2)
+    adao_uuid = adao.uuid
+    adao3 = ADAO(adao_uuid)
+    print(adao3)
 
 
 @transactional
@@ -125,4 +132,9 @@ def tt():
 
 if __name__=="__main__":
     logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
-    tt()
+    dtd_list1 = DAOtoDAOList(ADAOtoBDAO)
+    dtd_list1.load('7f55cf76-e800-4543-a954-c38d5c41dad3')
+    dtd_list2 = DAOtoDAOList(ADAOtoBDAO)
+    dtd_list2.load('7f55cf76-e800-4543-a954-c38d5c41dad3')
+    dtd_diff = dtd_list1 ^ dtd_list2
+    testsuite3()
