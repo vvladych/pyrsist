@@ -9,5 +9,9 @@ class ADAO(DAO):
     entity = "ADAO"
     join_objects_list = dict(ADAOtoBDAO=DAOtoDAOList(ADAOtoBDAO))
         
-    def addBDAO(self,BDAO):
-        self.join_objects_list["ADAOtoBDAO"].add(ADAOtoBDAO(self.uuid, BDAO.uuid))
+    def addBDAO(self, bdao):
+        """
+
+        :type bdao: object of type BDAO
+        """
+        self.join_objects_list["ADAOtoBDAO"].add(ADAOtoBDAO(self.uuid, bdao.uuid))

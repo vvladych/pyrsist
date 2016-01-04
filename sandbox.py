@@ -3,7 +3,9 @@ from sandbox.model.ADAO import ADAO
 from sandbox.model.BDAO import BDAO
 import logging
 from sandbox.helpers.CONST import CONST
-from sandbox.helpers.db_connection import get_db_connection, get_uuid_from_database
+from sandbox.helpers.db_connection import get_db_connection, get_uuid_from_database, dbcursor_wrapper
+from sandbox.helpers.transaction_broker import transactional
+
 
 
 def test_db_conn():
@@ -98,9 +100,7 @@ def testsuite3():
     adao.save()
     print(adao)
 
-    
-if __name__=="__main__":
-    logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
+def testsuite4():
     adao = ADAO()
     adao.a="a"
     adao.save()
@@ -109,3 +109,20 @@ if __name__=="__main__":
     adao.addBDAO(bdao)
     adao.save()
     print(adao)
+
+
+@transactional
+def tt():
+    insert_sql_tmpl = "INSERT INTO %s (%s) VALUES (%s)"
+    fieldlist = ["uuid", "text"]
+    data = [get_uuid_from_database(), 'Das ist ein Test lalalala']
+
+    insert_sql = insert_sql_tmpl % ("publicationtext", ",".join(fieldlist), ",".join(list(map(lambda x: "%s", data))))
+
+    print(insert_sql)
+    with dbcursor_wrapper(insert_sql, data) as cursor:
+        pass
+
+if __name__=="__main__":
+    logging.basicConfig(filename=CONST.LOGGER_FILE_NAME, level=logging.DEBUG)
+    tt()
